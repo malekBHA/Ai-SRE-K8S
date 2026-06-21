@@ -45,3 +45,7 @@ stages:
           engine=$(imageName):$(Build.BuildId) \
           -n ai-sre
       displayName: Update image
+
+    - script: |
+        kubectl apply -f k8s/ai-sre.yaml
+      displayName: Apply full manifest
