@@ -1,0 +1,53 @@
+trigger:
+- main
+
+variables:
+  imageName: tunnetcom/ai-sre-engine
+
+stages:
+
+- stage: BuildAndPush
+  jobs:
+  - job: build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+
+    - task: Docker@2
+      displayName: Build image
+      inputs:
+        command: build
+        repository: $(imageName)
+        dockerfile: Dockerfile
+        tags: |
+          $(Build.BuildId)
+
+    - task: Docker@2
+      displayName: Push image to Docker Hub
+      inputs:
+        command: push
+        repository: $(imageName)
+        containerRegistry: 'TunNetCom_Dockerhub_Connection'
+        tags: |
+          $(Build.BuildId)
+          latest
+
+- stage: Deploy
+  dependsOn: BuildAndPush
+  jobs:
+  - job: deploy
+    pool:
+      vmImage: OnPremAgents
+    steps:
+    - script: |
+    kubectl set image deployment/ai-sre-engine \
+      ai-sre=tunnetcom/ai-sre-engine:$(Build.BuildId) \
+      -n ai-sre
+  displayName: Update image
+    - task: KubernetesManifest@1
+      inputs:
+        action: deploy
+        kubernetesServiceConnection: 'K8S-SERVICE-CONNECTION'
+        namespace: ai-sre
+        manifests: |
+          k8s/ai-sre.yaml
