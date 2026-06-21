@@ -39,7 +39,7 @@ stages:
   - job: deploy
     pool: OnPremAgents
     steps:
- 
+
     - script: |
         kubectl set image deployment/ai-sre-engine \
           engine=$(imageName):$(Build.BuildId) \
