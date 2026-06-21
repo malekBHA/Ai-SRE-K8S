@@ -226,7 +226,7 @@ def run():
         inc = tracker.register(key, list(window))
         window.clear()
         inc.report = call_llm(inc.events)
-        inc.advance(State.ANALYZED)
+        inc.state = State.ANALYZED
         incidents.append(inc)
         incidents = incidents[-50:]
         print_incident(inc)
