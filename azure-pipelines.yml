@@ -36,18 +36,11 @@ stages:
   dependsOn: BuildAndPush
   jobs:
   - job: deploy
-    pool:
-      vmImage: OnPremAgents
+    pool: OnPremAgents
     steps:
+ 
     - script: |
-    kubectl set image deployment/ai-sre-engine \
-      ai-sre=tunnetcom/ai-sre-engine:$(Build.BuildId) \
-      -n ai-sre
-  displayName: Update image
-    - task: KubernetesManifest@1
-      inputs:
-        action: deploy
-        kubernetesServiceConnection: 'K8S-SERVICE-CONNECTION'
-        namespace: ai-sre
-        manifests: |
-          k8s/ai-sre.yaml
+        kubectl set image deployment/ai-sre-engine \
+          engine=$(imageName):$(Build.BuildId) \
+          -n ai-sre
+      displayName: Update image
