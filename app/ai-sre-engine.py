@@ -32,6 +32,9 @@ class Incident:
         self.created_at = datetime.now(timezone.utc).isoformat()
         self.report = None
 
+    def advance(self, state):
+        self.state = state
+
     def to_dict(self):
         return {"id": self.id, "state": self.state, "created_at": self.created_at, "report": self.report, "events": self.events[-5:]}
 
@@ -200,6 +203,7 @@ def run_metrics():
     server.serve_forever()
 
 def run():
+    global incidents
     v1 = k8s()
     w = watch.Watch()
     tracker = IncidentTracker()
