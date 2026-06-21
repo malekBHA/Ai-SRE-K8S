@@ -46,6 +46,8 @@ spec:
       labels:
         app: ai-sre-engine
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: aiaion
       containers:
         - name: engine
           image: tunnetcom/ai-sre-engine:latest
