@@ -1,0 +1,128 @@
+{
+  "title": "AI-SRE Engine",
+  "tags": ["ai-sre", "kubernetes"],
+  "schemaVersion": 39,
+  "version": 1,
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "templating": {
+    "list": [
+      {
+        "name": "severity",
+        "type": "custom",
+        "query": "critical, high, medium, low",
+        "current": { "text": "All", "value": ".*" },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "title": "Total Incidents",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "ai_sre_incidents_total",
+          "legendFormat": "incidents"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "LLM Calls",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 4, "y": 0 },
+      "targets": [
+        {
+          "expr": "ai_sre_llm_calls_total",
+          "legendFormat": "LLM calls"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 20 },
+              { "color": "red", "value": 100 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Incidents by Severity",
+      "type": "bargauge",
+      "gridPos": { "h": 6, "w": 4, "x": 8, "y": 0 },
+      "targets": [
+        {
+          "expr": "ai_sre_incidents_by_severity{severity=~\"$severity\"}",
+          "legendFormat": "{{ severity }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 10 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Incidents Over Time",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 6 },
+      "targets": [
+        {
+          "expr": "ai_sre_incidents_by_severity{severity=~\"$severity\"}",
+          "legendFormat": "{{ severity }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "fillOpacity": 30, "showPoints": "never" }
+        }
+      }
+    },
+    {
+      "title": "Recent Incidents",
+      "type": "table",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 6 },
+      "targets": [
+        {
+          "expr": "ai_sre_incidents_by_severity{severity=~\"$severity\"}",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true, "Value": false, "__name__": true, "container": true, "endpoint": true, "instance": true, "job": true, "namespace": true, "pod": true, "service": true } } }
+      ]
+    }
+  ]
+}
