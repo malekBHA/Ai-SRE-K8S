@@ -125,20 +125,81 @@
       }
     },
     {
-      "title": "Recent Incidents",
+      "title": "Incident Details",
       "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "type": "table",
-      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 6 },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 16 },
       "targets": [
         {
-          "expr": "ai_sre_incidents_by_severity{severity=~\"$severity\"}",
+          "expr": "ai_sre_incident_info{severity=~\"$severity\"}",
           "format": "table",
           "instant": true
         }
       ],
       "transformations": [
-        { "id": "organize", "options": { "excludeByName": { "Time": true, "Value": false, "__name__": true, "container": true, "endpoint": true, "instance": true, "job": true, "namespace": true, "pod": true, "service": true } } }
-      ]
+        { "id": "organize", "options": { "excludeByName": { "Time": true, "Value": true, "__name__": true, "instance": true, "job": true } } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "left" },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "severity" },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Severity"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "orange", "value": 1 },
+                    { "color": "red", "value": 2 }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "id" },
+            "properties": [
+              { "id": "displayName", "value": "ID" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "what" },
+            "properties": [
+              { "id": "displayName", "value": "What Happened" },
+              { "id": "custom.width", "value": 350 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "why" },
+            "properties": [
+              { "id": "displayName", "value": "Why" },
+              { "id": "custom.width", "value": 400 }
+            ]
+          }
+        ]
+      }
     }
   ]
 }

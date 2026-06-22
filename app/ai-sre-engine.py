@@ -168,8 +168,11 @@ class MetricsHandler(BaseHTTPRequestHandler):
             total = len(incidents)
             by_severity = {}
             for i in incidents:
-                s = (i.report or {}).get("severity", "unknown")
+                s = ((i.report or {}).get("severity", "unknown") or "unknown").lower()
                 by_severity[s] = by_severity.get(s, 0) + 1
+
+            def sanitize(v):
+                return str(v).replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ")[:200]
 
             lines = [
                 "# HELP ai_sre_incidents_total Total incidents analyzed",
@@ -179,11 +182,20 @@ class MetricsHandler(BaseHTTPRequestHandler):
                 "# TYPE ai_sre_incidents_by_severity gauge",
             ]
             for sev, count in by_severity.items():
-                lines.append(f'ai_sre_incidents_by_severity{{severity="{sev}"}} {count}')
+                lines.append(f'ai_sre_incidents_by_severity{{severity="{sev.lower()}"}} {count}')
 
             lines.append("# HELP ai_sre_llm_calls_total Total LLM calls made")
             lines.append("# TYPE ai_sre_llm_calls_total counter")
             lines.append(f'ai_sre_llm_calls_total {total}')
+
+            lines.append("# HELP ai_sre_incident_info Incident details")
+            lines.append("# TYPE ai_sre_incident_info gauge")
+            for inc in incidents[-20:]:
+                r = inc.report or {}
+                what = sanitize(r.get("what_happened", ""))
+                why = sanitize(r.get("why_it_happened", ""))
+                sev = (r.get("severity", "unknown") or "unknown").lower()
+                lines.append(f'ai_sre_incident_info{{id="{inc.id}",severity="{sev}",what="{what}",why="{why}"}} 1')
 
             body = "\n".join(lines).encode()
             self.send_response(200)
